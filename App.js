@@ -13,63 +13,42 @@ import { useContext } from 'react';
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-const HomeNav = ({ route, navigation }) => {
-  const [open, setOpen] = useState(false);
-
-  return (
-
-
-    <Stack.Navigator
-      screenOptions={({ navigation, route }) => ({
-        headerRight: props => (
-          <BurgerMenu {...props}
-            navigation={navigation}
-          />)
-      })}
-    >
-      <Stack.Screen name="Main" component={Home} />
-      <Stack.Screen name="PageTwo" component={PageTwo} />
-      <Stack.Screen
-        name="Nav"
-        component={HomeNav}
-        initialParams={{ open }}
-      />
-    </Stack.Navigator>
-
-  );
-
-}
-
 export default App = () => {
   const [openStatus, setOpenStatus] = useState(false);
   const navContext = useContext(NavContext);
-  useEffect(() => {
-    console.log("changed");
-    setOpenStatus(true)
-  }, [navContext.open])
+  const [context, setContext] = useState({
+    open: 1,
+    list:["Name"],
+    setOpen: () => setContext(curr => {
+      console.log(curr.open)
+      const newName = "name"+curr.open
+      let newArr
+      if(curr.list.length > 2) newArr = [...curr.list.slice(curr.list.length-3), newName]
+      else newArr = [...curr.list, newName]
+      return { ...curr, open: curr.open + 1, list: newArr }
+    })
+  })
   return (
-
-    <NavigationContainer>
-      <Drawer.Navigator
-        initialRouteName="Home"
-        screenOptions={{
-          headerShown: true,
-          headerLeft:()=><View></View>,
-          headerRight: ()=><BurgerMenu/>
-        }}
-        drawerPosition="right"
-        drawerStyle={{
-          backgroundColor: "#A9A9A9EF"
-        }}
-        drawerType="front"
-      >
-        <Drawer.Screen 
-        screenOptions={({ navigation, route }) => ({
-          
-        })}
-          name="Main" component={Home} />
-        <Drawer.Screen name="PageTwo" component={PageTwo} />
-      </Drawer.Navigator>
-    </NavigationContainer>
+    <NavContext.Provider value={context}>
+      <NavigationContainer>
+        <Drawer.Navigator
+          initialRouteName="Home"
+          screenOptions={{
+            headerShown: true,
+            headerLeft: () => <View></View>,
+            headerRight: () => <BurgerMenu />
+          }}
+          drawerPosition="right"
+          drawerStyle={{
+            backgroundColor: "#A9A9A9EF"
+          }}
+          drawerType="front"
+        >
+          <Drawer.Screen name="Main" component={Home} />
+          <Drawer.Screen name="PageTwo" component={PageTwo} />
+          {context.list.map(listName=><Drawer.Screen key={listName} name={listName} component={PageTwo} />)}
+        </Drawer.Navigator>
+      </NavigationContainer>
+    </NavContext.Provider>
   )
 };

@@ -2,7 +2,10 @@ import React, {useEffect} from 'react';
 import styled from 'styled-components/native';
 import ButtonStyled from '../ButtonStyled';
 import BurgerMenu from '../BurgerMenu';
+import { useContext } from 'react';
+import NavContext from '../../contexts/NavContext';
 const Home = ({navigation}) => {
+  const navContext = useContext(NavContext)
  return (
   <MainView>
     <TextLight>
@@ -17,6 +20,10 @@ const Home = ({navigation}) => {
       styles="width:200px;"
       fontSize="40px"
       onPress={()=>navigation.toggleDrawer} 
+    />
+    <ButtonStyled
+      title = "add link"
+      onPress={()=>navContext.setOpen()}
     />
   </MainView>
 )};
