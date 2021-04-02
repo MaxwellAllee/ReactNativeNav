@@ -1,21 +1,75 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import React, { useEffect, useState } from 'react';
+import { View, Text } from 'react-native';
+import { NavigationContainer, StackActions } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createDrawerNavigator, DrawerActions } from '@react-navigation/drawer';
+import NavContext from './contexts/NavContext';
+import Home from './components/Home';
+import PageTwo from './components/PageTwo';
+import styled from 'styled-components/native';
+import BurgerMenu from './components/BurgerMenu';
+import { useContext } from 'react';
+const Stack = createStackNavigator();
+const Drawer = createDrawerNavigator();
 
-export default function App() {
+const HomeNav = ({ route, navigation }) => {
+  const [open, setOpen] = useState(false);
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+
+
+    <Stack.Navigator
+      screenOptions={({ navigation, route }) => ({
+        headerRight: props => (
+          <BurgerMenu {...props}
+            navigation={navigation}
+          />)
+      })}
+    >
+      <Stack.Screen name="Main" component={Home} />
+      <Stack.Screen name="PageTwo" component={PageTwo} />
+      <Stack.Screen
+        name="Nav"
+        component={HomeNav}
+        initialParams={{ open }}
+      />
+    </Stack.Navigator>
+
   );
+
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App = () => {
+  const [openStatus, setOpenStatus] = useState(false);
+  const navContext = useContext(NavContext);
+  useEffect(() => {
+    console.log("changed");
+    setOpenStatus(true)
+  }, [navContext.open])
+  return (
+
+    <NavigationContainer>
+      <Drawer.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          headerShown: true,
+          headerLeft:()=><View></View>,
+          headerRight: ()=><BurgerMenu/>
+        }}
+        drawerPosition="right"
+        drawerStyle={{
+          backgroundColor: "#A9A9A9EF"
+        }}
+        drawerType="front"
+      >
+        <Drawer.Screen 
+        screenOptions={({ navigation, route }) => ({
+          
+        })}
+          name="Main" component={Home} />
+        <Drawer.Screen name="PageTwo" component={PageTwo} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  )
+};
