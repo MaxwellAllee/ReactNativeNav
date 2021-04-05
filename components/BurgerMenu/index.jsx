@@ -4,13 +4,14 @@ import { DrawerActions } from '@react-navigation/drawer';
 import { useContext } from 'react';
 import NavContext from '../../contexts/NavContext';
 import { useNavigation } from '@react-navigation/core';
+import StyleContext from '../../contexts/StyleContext';
 
 const BurgerMenu = () => {
+  const styleCont = useContext(StyleContext)
   const navigation = useNavigation();
   const [open, setOpen] = useState(false);
   const navContext = useContext(NavContext);
   useEffect(() => {
-    console.log(navigation);
     return () => {
     }
   }, []);
@@ -22,9 +23,9 @@ const BurgerMenu = () => {
     }}
     open={open}
     >
-      <LinkView primary={"black"} open={open} />
-      <LinkView primary={"black"} open={open} />
-      <LinkView primary={"black"} open={open} />
+      <LinkView primary={styleCont.primary} open={open} />
+      <LinkView primary={styleCont.primary} open={open} />
+      <LinkView primary={styleCont.primary} open={open} />
     </BurgerStyle>
   );
 };

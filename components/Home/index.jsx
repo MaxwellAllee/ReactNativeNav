@@ -1,41 +1,38 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import styled from 'styled-components/native';
 import ButtonStyled from '../ButtonStyled';
-import BurgerMenu from '../BurgerMenu';
 import { useContext } from 'react';
 import NavContext from '../../contexts/NavContext';
+import StyleContext from '../../contexts/StyleContext';
 const Home = ({navigation}) => {
+  const styleContext = useContext(StyleContext)
   const navContext = useContext(NavContext)
  return (
-  <MainView>
-    <TextLight>
+  <MainView background={styleContext.background}>
+    <TextColored color={styleContext.text}>
       hello world
-   </TextLight>
+   </TextColored>
     <ButtonStyled
       title="Click Me" 
       onPress={()=>navigation.navigate('PageTwo')}
-    />
-    <ButtonStyled 
-      title="test" 
-      styles="width:200px;"
-      fontSize="40px"
-      onPress={()=>navigation.toggleDrawer} 
+      styles={{ width:"200px"}}
     />
     <ButtonStyled
       title = "add link"
       onPress={()=>navContext.setOpen()}
+      styles="width: 200px;"
     />
   </MainView>
 )};
 export default Home;
 
 const MainView = styled.View`
-  background: purple;
+  background: ${({background})=>background};
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 `;
-const TextLight = styled.Text`
-  color: white;
+const TextColored = styled.Text`
+  color: ${({color})=>color};
 `;
