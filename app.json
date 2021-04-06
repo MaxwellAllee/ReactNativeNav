@@ -4,11 +4,11 @@
     "slug": "test-app1",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/bnn.png",
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/BoringXL.png",
       "resizeMode": "contain",
-      "backgroundColor": "#800080"
+      "backgroundColor": "#F7FFF7"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
@@ -21,8 +21,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#800080"
+        "foregroundImage": "./assets/bnn.png",
+        "backgroundColor": "#F7FFF7"
       }
     },
     "web": {
