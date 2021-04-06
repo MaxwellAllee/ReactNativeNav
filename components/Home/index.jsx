@@ -1,38 +1,79 @@
 import React from 'react';
+import { TouchableOpacity, View, ScrollView } from 'react-native';
 import styled from 'styled-components/native';
 import ButtonStyled from '../ButtonStyled';
 import { useContext } from 'react';
 import NavContext from '../../contexts/NavContext';
 import StyleContext from '../../contexts/StyleContext';
-const Home = ({navigation}) => {
+import ArticleCard from '../ArticleCard';
+
+// import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
+const Home = ({ navigation }) => {
   const styleContext = useContext(StyleContext)
   const navContext = useContext(NavContext)
- return (
-  <MainView background={styleContext.background}>
-    <TextColored color={styleContext.text}>
-      hello world
-   </TextColored>
-    <ButtonStyled
-      title="Click Me" 
-      onPress={()=>navigation.navigate('PageTwo')}
-      styles={{ width:"200px"}}
-    />
-    <ButtonStyled
-      title = "add link"
-      onPress={()=>navContext.setOpen()}
-      styles="width: 200px;"
-    />
-  </MainView>
-)};
+  return (
+    <Container>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} >
+        <MainView background={styleContext.background}>
+          <PicHolder>
+            <Logo source={styleContext.currentTheme === 'lightTheme' ?
+              require('../../assets/logo.png') :
+              require('../../assets/light.png')
+            } />
+          </PicHolder>
+          {!navContext.loaded ? <TextColored color={styleContext.text}>
+            Loading new articles
+   </TextColored> :
+            <View>
+              {navContext.list.map(article => (
+                <TouchableOpacity
+                  onPress={() => {
+                    navContext.addArticle(article)
+                    navigation.navigate('Article', article)
+                  }}
+                  activeOpacity={.71}
+                  key={article.id}
+                >
+                  <ArticleCard
+                    key={article.id}
+                  >
+                    <TextColored color={styleContext.text}>
+                      {article.title}
+                    </TextColored>
+                  </ArticleCard>
+
+                </TouchableOpacity>
+              ))}
+            </View>
+          }
+        </MainView>
+      </ScrollView>
+    </Container>
+  )
+};
 export default Home;
 
 const MainView = styled.View`
-  background: ${({background})=>background};
-  height: 100%;
+  background: ${({ background }) => background};
+  flex: 1;
   display: flex;
+  align-items: center;
+  padding: 0px 10px 0px 10px;
+`;
+const TextColored = styled.Text`
+  color: ${({ color }) => color};
+  fontSize: ${({ font }) => font || "15px"}
+`;
+const Logo = styled.Image`
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  width:100px;
+`;
+const PicHolder = styled.View`
   justify-content: center;
   align-items: center;
 `;
-const TextColored = styled.Text`
-  color: ${({color})=>color};
+const Container = styled.SafeAreaView`
+  flex: 1
 `;

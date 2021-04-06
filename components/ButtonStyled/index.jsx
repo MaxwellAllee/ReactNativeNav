@@ -25,7 +25,6 @@ export default ButtonStyled;
 const ButtonContainer = styled.TouchableOpacity`
 padding: 15px;
 background-color: ${({ backgroundColor }) => backgroundColor};
-border-radius: 8px;
 margin-bottom: 5px;
 ${({ styles }) => styles}
 `;

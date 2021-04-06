@@ -2,35 +2,35 @@ import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
 import { View, Text } from 'react-native';
 import { NavigationContainer, StackActions } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerActions, DrawerContent } from '@react-navigation/drawer';
 import NavContext from './contexts/NavContext';
 import Home from './components/Home';
 import PageTwo from './components/PageTwo';
-import styled from 'styled-components/native';
 import BurgerMenu from './components/BurgerMenu';
 import StyleContext from './contexts/StyleContext';
-import { useContext } from 'react';
 import StyledDrawer from './components/StyledDrawer';
-const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 export default App = () => {
-  const [openStatus, setOpenStatus] = useState(false);
-  const navContext = useContext(NavContext);
-  const [context, setContext] = useState({
-    open: 1,
-    list: ["Name"],
-    setOpen: () => setContext(curr => {
-
-      const newName = "name" + curr.open
-      let newArr
-      if (curr.list.length > 2) newArr = [...curr.list.slice(curr.list.length - 3), newName]
-      else newArr = [...curr.list, newName]
-      return { ...curr, open: curr.open + 1, list: newArr }
-    })
-
-  })
+  const [navContext, setNavContext] = useState({
+    list: [],
+    loaded: false,
+    recent: [],
+    addArticle: (article) => {
+      setNavContext(curr => {
+          if(JSON.stringify(curr.recent).includes(article.id)){
+            return curr
+          }
+          else{
+            let newArr
+            if (curr.recent.length > 2) newArr = [...curr.recent.slice(curr.recent.length - 3), article]
+            else newArr = [...curr.recent, article]
+            return { ...curr, open: curr.open + 1, recent: newArr }
+          }
+        })
+      
+    }
+  });
   const [styleCont, setStyleCont] = useState(
     {
       primary: '#FFE66D',
@@ -61,8 +61,21 @@ export default App = () => {
       },
     },
   );
+  useEffect(() => {
+    getArticle();
+  }, [])
+  const getArticle = async () => {
+    try {
+      const url = 'https://gentle-escarpment-79836.herokuapp.com/';
+      const results = await fetch(url);
+      const resTxt = await results.json();
+      setNavContext(curr => ({ ...curr, list: resTxt, loaded: true }))
+    } catch (err) {
+      console.log(err);
+    }
+  }
   return (
-    <NavContext.Provider value={context}>
+    <NavContext.Provider value={navContext}>
       <StyleContext.Provider value={styleCont}>
         <NavigationContainer>
 
@@ -77,7 +90,7 @@ export default App = () => {
               headerTitleStyle: {
                 color: styleCont.primary,
               },
-              headerTitle: "ReaderApp",
+
               headerRight: () => <BurgerMenu />
             }}
             drawerPosition="right"
@@ -85,13 +98,12 @@ export default App = () => {
               backgroundColor: styleCont.secondary
             }}
             drawerType="front"
-            drawerContent={(props) => <StyledDrawer {...props}/>}
+            drawerContent={(props) => <StyledDrawer {...props} />}
 
           >
-    
-            <Drawer.Screen name="Main" component={Home} />
-            <Drawer.Screen name="PageTwo" component={PageTwo} />
-            {context.list.map(listName => <Drawer.Screen key={listName} name={listName} component={PageTwo} />)}
+
+            <Drawer.Screen name="Main" headerLeft="Latest News" component={Home} />
+            <Drawer.Screen name="Article" component={PageTwo} initialParams={navContext.list[0]} />
           </Drawer.Navigator>
         </NavigationContainer>
       </StyleContext.Provider>
