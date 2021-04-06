@@ -23,13 +23,13 @@ const Home = ({ navigation }) => {
           </PicHolder>
           {!navContext.loaded ? <TextColored color={styleContext.text}>
             Loading new articles
-   </TextColored> :
+            </TextColored> :
             <View>
-              {navContext.list.map(article => (
+              {navContext.list.length ? navContext.list.map(article => (
                 <TouchableOpacity
                   onPress={() => {
                     navContext.addArticle(article)
-                    navigation.navigate('Article', article)
+                    navigation.navigate('Article', {...article, offline: navContext.offline})
                   }}
                   activeOpacity={.71}
                   key={article.id}
@@ -43,7 +43,11 @@ const Home = ({ navigation }) => {
                   </ArticleCard>
 
                 </TouchableOpacity>
-              ))}
+              )):
+              <TextColored color={styleContext.text} styles={"font-size: 30px; textAlign: center"}>
+                You are offline and have not recently viewed articles.
+              </TextColored>
+              }
             </View>
           }
         </MainView>
@@ -63,6 +67,7 @@ const MainView = styled.View`
 const TextColored = styled.Text`
   color: ${({ color }) => color};
   fontSize: ${({ font }) => font || "15px"}
+  ${({styles})=>styles}
 `;
 const Logo = styled.Image`
   justify-content: center;
