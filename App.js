@@ -1,21 +1,37 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { View, Text } from 'react-native';
-import { NavigationContainer, StackActions } from '@react-navigation/native';
-import { createDrawerNavigator, DrawerActions, DrawerContent } from '@react-navigation/drawer';
+import { View, Text} from 'react-native';
+import { NavigationContainer} from '@react-navigation/native';
+import { createDrawerNavigator} from '@react-navigation/drawer';
 import NavContext from './contexts/NavContext';
 import Home from './components/Home';
 import PageTwo from './components/PageTwo';
 import BurgerMenu from './components/BurgerMenu';
 import StyleContext from './contexts/StyleContext';
 import StyledDrawer from './components/StyledDrawer';
+import HomeButton from './components/HomeButton';
+import * as SecureStore from 'expo-secure-store';
 const Drawer = createDrawerNavigator();
+
+const save = async (key, value)=> {
+  try{
+    await SecureStore.setItemAsync(key, value);
+  } catch (err){
+    console.log(err)
+  }
+
+}
+
+const getValueFor = async (key)=> {
+  return await SecureStore.getItemAsync(key);
+}
 
 export default App = () => {
   const [navContext, setNavContext] = useState({
     list: [],
     loaded: false,
     recent: [],
+    offline: false,
     addArticle: (article) => {
       setNavContext(curr => {
           if(JSON.stringify(curr.recent).includes(article.id)){
@@ -23,8 +39,9 @@ export default App = () => {
           }
           else{
             let newArr
-            if (curr.recent.length > 2) newArr = [...curr.recent.slice(curr.recent.length - 3), article]
+            if (curr.recent.length > 2) newArr = [...curr.recent.slice(curr.recent.length - 2), article]
             else newArr = [...curr.recent, article]
+            save("recent", JSON.stringify(newArr))
             return { ...curr, open: curr.open + 1, recent: newArr }
           }
         })
@@ -61,19 +78,70 @@ export default App = () => {
       },
     },
   );
-  useEffect(() => {
-    getArticle();
-  }, [])
+  const getRecent = async ()=>{
+    const savedRecent = await getValueFor("recent");
+    if(savedRecent) setNavContext(curr=>({...curr, recent: JSON.parse(savedRecent)}))
+  }
+  const offlineMode = async()=>{
+    const offlinePageCount = await getValueFor('pageNumber');
+    let articleArray = []
+    if(offlinePageCount){
+      for (let i = 0; i < offlinePageCount; i++) {
+        const pageOfArticles = JSON.parse( await getValueFor("page"+i));
+        articleArray = articleArray.concat(pageOfArticles);
+      }
+      setNavContext(curr=>({...curr, list: articleArray, loaded: true, offline: true}))
+    }
+    else{
+      setNavContext(curr=>({...curr, loaded: true, offline: true}))
+    }
+  }
+  const saveOfflineData = async offlineData =>{
+    try{
+      const numberOfPages = Math.ceil(offlineData.length/3);
+      const oldPageNumber = await parseInt(getValueFor('pageNumber')) || 0;
+      for (let i = 0; i < numberOfPages; i++) {
+        save('page' + i, JSON.stringify(offlineData.slice(i*3, 3*(i+1))));
+      };
+      if(oldPageNumber > numberOfPages){
+        for(let i = numberOfPages + 1; i === oldPageNumber; i++){
+          SecureStore.deleteItemAsync("page"+i);
+        }
+      }
+      save("pageNumber", JSON.stringify(numberOfPages));
+    } catch (err){
+      console.log(err);
+    };
+  }
   const getArticle = async () => {
     try {
       const url = 'https://gentle-escarpment-79836.herokuapp.com/';
-      const results = await fetch(url);
-      const resTxt = await results.json();
-      setNavContext(curr => ({ ...curr, list: resTxt, loaded: true }))
+      const online = await fetch(url+"active")
+      const statusCode = await online.status
+      if(statusCode === 200){
+        const results = await fetch(url);
+        const resJSON = await results.json();
+        const finalJSON = resJSON.map(article=>{
+          return {
+          id: article.short_url.split("/")[3],
+          uri: article.multimedia ? article.multimedia[0].url.split("/images")[1] : "",
+          caption: article.multimedia ?  article.multimedia[0].caption : "No Image for this Article",
+          title: article.title,
+          abstract: article.abstract
+        }})
+        saveOfflineData(finalJSON);
+        setNavContext(curr => ({ ...curr, list: finalJSON, loaded: true }));
+      }else{
+        offlineMode()
+      }
     } catch (err) {
       console.log(err);
     }
   }
+  useEffect(() => {
+    getRecent();
+    getArticle();
+  }, [])
   return (
     <NavContext.Provider value={navContext}>
       <StyleContext.Provider value={styleCont}>
@@ -83,12 +151,13 @@ export default App = () => {
             initialRouteName="Home"
             screenOptions={{
               headerShown: true,
-              headerLeft: () => <View></View>,
+              headerLeft: (props) => <HomeButton {...props} />,
               headerStyle: {
                 backgroundColor: styleCont.secondary,
               },
               headerTitleStyle: {
                 color: styleCont.primary,
+                justifyContent:"space-between"
               },
 
               headerRight: () => <BurgerMenu />

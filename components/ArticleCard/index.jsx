@@ -9,6 +9,7 @@ const ArticleCard = (props) => {
       onPress={()=>alert("second")}
       background={styleContext.background}
       secondary={styleContext.primary}
+      mode={styleContext.currentTheme}
     >
       {props.children}
     </Card>
@@ -26,9 +27,6 @@ const Card = styled.View`
   shadow-radius: 15px;
   shadow-color: black;
   shadow-offset: 10px 10px;
-  elevation:10
-`;
-const TextColored = styled.Text`
-  color: ${({ color }) => color};
-  fontSize: ${({ font }) => font || "15px"}
+  elevation:10;
+  ${({mode, secondary})=>mode === "lightTheme"|| "borderColor: " + secondary + "; borderWidth: 2px"}
 `;

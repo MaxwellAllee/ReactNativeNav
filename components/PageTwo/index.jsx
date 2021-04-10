@@ -11,20 +11,26 @@ const PageTwo = () => {
   const styleContext = useContext(StyleContext);
   return (
     <Container>
-      <ScrollView contentContainerStyle={{flexGrow: 1}} >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} >
         <MainView background={styleContext.background}>
           <ArticleTitle color={styleContext.secondary} fontSiz="40px">
             {params.title}
           </ArticleTitle>
           <ArticleImage
-            source={{ uri: params.media[0]["media-metadata"][2]["url"] }}
+            offline={params.offline}
+            source={params.offline || params.uri === "" ?
+              styleContext.currentTheme === 'lightTheme' ?
+                require('../../assets/logo.png') :
+                require('../../assets/light.png')
+              :
+              { uri: "https://static01.nyt.com/images"+params.uri }}
           />
           <TextLight
             currentTheme={styleContext.currentTheme}
             font="11px"
             styles={{ padding: "0px 17px", marginBottom: "10px" }}
           >
-            {params.media[0].caption}
+            {params.caption}
           </TextLight>
           <TextLight
             currentTheme={styleContext.currentTheme}
@@ -64,8 +70,8 @@ const ArticleTitle = styled.Text`
   margin: 10px 0
 `;
 const ArticleImage = styled.Image`
-  height: 234px;
-  width: 352px;
+  height: ${({offline})=> offline ? "150px" : "234px"};
+  width: ${({offline})=> offline ? "150px" : "352px"};
 `;
 const SmallText = styled(TextLight)`
   fontSize: 11px

@@ -1,20 +1,20 @@
 import React from 'react';
 import { useContext } from 'react';
+import { Platform } from 'react-native';
 import styled from 'styled-components/native';
 import StyleContext from '../../contexts/StyleContext';
 
-const SunnySlider = ({ cb, status }) => {
+const SunnySlider = () => {
   const styleContext = useContext(StyleContext) 
-  const toggle = () => cb();
   return (
     <MainView>
       <Label 
         color={styleContext.primary}>
-          Theme Switch
+        Theme Switch
       </Label>
       <ThemeSwitch 
         onValueChange={()=>styleContext.themeSwitcher()}
-        style={{transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }]}}
+        style={Platform.OS === "android" && {transform: [{ scaleX: 1.4 }, { scaleY: 1.4 }]}}
         value = {styleContext.currentTheme !== 'lightTheme'}
         trackColor={{ false: styleContext.secondary, true: "#1e1e1e" }}
         thumbColor={styleContext.currentTheme !== 'lightTheme' ? "#f4f3f4":"#f5dd4b"  }
@@ -33,10 +33,11 @@ const MainView = styled.View`
 
 const Label = styled.Text`
   color: ${({color})=>color};
-  fontWeight: 800
-  fontSize: 20px
-`;
+  fontWeight: 800;
+  fontSize: 20px;
+  justifyContent: center;
+  alignItems: center;
+  `;
 const ThemeSwitch = styled.Switch`
-  height: 50px
   
 `;
