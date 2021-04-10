@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useState } from 'react';
-import { View} from 'react-native';
+import { View, Text} from 'react-native';
 import { NavigationContainer} from '@react-navigation/native';
 import { createDrawerNavigator} from '@react-navigation/drawer';
 import NavContext from './contexts/NavContext';
@@ -9,6 +9,7 @@ import PageTwo from './components/PageTwo';
 import BurgerMenu from './components/BurgerMenu';
 import StyleContext from './contexts/StyleContext';
 import StyledDrawer from './components/StyledDrawer';
+import HomeButton from './components/HomeButton';
 import * as SecureStore from 'expo-secure-store';
 const Drawer = createDrawerNavigator();
 
@@ -38,7 +39,7 @@ export default App = () => {
           }
           else{
             let newArr
-            if (curr.recent.length > 2) newArr = [...curr.recent.slice(curr.recent.length - 3), article]
+            if (curr.recent.length > 2) newArr = [...curr.recent.slice(curr.recent.length - 2), article]
             else newArr = [...curr.recent, article]
             save("recent", JSON.stringify(newArr))
             return { ...curr, open: curr.open + 1, recent: newArr }
@@ -83,12 +84,10 @@ export default App = () => {
   }
   const offlineMode = async()=>{
     const offlinePageCount = await getValueFor('pageNumber');
-    console.log(offlinePageCount);
     let articleArray = []
     if(offlinePageCount){
       for (let i = 0; i < offlinePageCount; i++) {
         const pageOfArticles = JSON.parse( await getValueFor("page"+i));
-        console.log(pageOfArticles)
         articleArray = articleArray.concat(pageOfArticles);
       }
       setNavContext(curr=>({...curr, list: articleArray, loaded: true, offline: true}))
@@ -99,17 +98,16 @@ export default App = () => {
   }
   const saveOfflineData = async offlineData =>{
     try{
-      const numberOfPages = Math.ceil(offlineData.length/4);
+      const numberOfPages = Math.ceil(offlineData.length/3);
       const oldPageNumber = await parseInt(getValueFor('pageNumber')) || 0;
       for (let i = 0; i < numberOfPages; i++) {
-        save('page' + i, JSON.stringify(offlineData.slice(i*4, 4*(i+1))));
+        save('page' + i, JSON.stringify(offlineData.slice(i*3, 3*(i+1))));
       };
       if(oldPageNumber > numberOfPages){
         for(let i = numberOfPages + 1; i === oldPageNumber; i++){
           SecureStore.deleteItemAsync("page"+i);
         }
       }
-      console.log(numberOfPages)
       save("pageNumber", JSON.stringify(numberOfPages));
     } catch (err){
       console.log(err);
@@ -123,13 +121,14 @@ export default App = () => {
       if(statusCode === 200){
         const results = await fetch(url);
         const resJSON = await results.json();
-        const finalJSON = resJSON.map(article=>({
-          id: article.id,
-          uri: article.media[0]["media-metadata"][2]["url"],
-          caption: article.media[0].caption,
+        const finalJSON = resJSON.map(article=>{
+          return {
+          id: article.short_url.split("/")[3],
+          uri: article.multimedia ? article.multimedia[0].url.split("/images")[1] : "",
+          caption: article.multimedia ?  article.multimedia[0].caption : "No Image for this Article",
           title: article.title,
           abstract: article.abstract
-        }))
+        }})
         saveOfflineData(finalJSON);
         setNavContext(curr => ({ ...curr, list: finalJSON, loaded: true }));
       }else{
@@ -152,12 +151,13 @@ export default App = () => {
             initialRouteName="Home"
             screenOptions={{
               headerShown: true,
-              headerLeft: () => <View></View>,
+              headerLeft: (props) => <HomeButton {...props} />,
               headerStyle: {
                 backgroundColor: styleCont.secondary,
               },
               headerTitleStyle: {
                 color: styleCont.primary,
+                justifyContent:"space-between"
               },
 
               headerRight: () => <BurgerMenu />

@@ -18,12 +18,12 @@ const PageTwo = () => {
           </ArticleTitle>
           <ArticleImage
             offline={params.offline}
-            source={params.offline ?
+            source={params.offline || params.uri === "" ?
               styleContext.currentTheme === 'lightTheme' ?
                 require('../../assets/logo.png') :
                 require('../../assets/light.png')
               :
-              { uri: params.uri }}
+              { uri: "https://static01.nyt.com/images"+params.uri }}
           />
           <TextLight
             currentTheme={styleContext.currentTheme}
